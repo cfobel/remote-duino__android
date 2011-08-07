@@ -1,6 +1,7 @@
 package net.fobel.android.remoteduino;
 
 import android.app.Activity;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
 
+
 public class RemoteDuinoActivity extends Activity {
     /** Called when the activity is first created. */
     @Override
@@ -24,11 +26,17 @@ public class RemoteDuinoActivity extends Activity {
     }
     
     
-    public void on__learn_code__handler(View view) {
+    public void on__learn_code__handler(View view) throws IOException {
         String url = "http://192.168.1.182/learn";
         
         String result = process_get_request(view, url);
-		Toast.makeText(this, "Result: " + result, Toast.LENGTH_LONG).show();
+		try {
+			RemoteCommand cmd = new RemoteCommand(result);
+			Toast.makeText(this, "Found protocol: " + cmd.protocol, Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "Found code: " + cmd.code, Toast.LENGTH_LONG).show();
+		} catch(Exception e) {
+			Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_LONG).show();
+		}
 	}
     
     
@@ -101,16 +109,20 @@ public class RemoteDuinoActivity extends Activity {
     * @return String
     */
    public static String convertStreamToString(InputStream is) {
-       BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+	   BufferedReader reader = new BufferedReader(new InputStreamReader(is));
        StringBuilder sb = new StringBuilder();
 
        String line = null;
        try {
            while ((line = reader.readLine()) != null) {
                sb.append(line + "\n");
+               Thread.sleep(100);
            }
        } catch (IOException e) {
            e.printStackTrace();
+       } catch (InterruptedException e) {
+    	   // TODO Auto-generated catch block
+    	   e.printStackTrace();
        } finally {
            try {
                is.close();
