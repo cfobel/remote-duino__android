@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, RemoteDuinoActivity!</string>
+    <string name="app_name">RemoteDuino</string>
+    <string name="str__tv_onoff">TV ON/OFF</string>
+    <string name="str__learn_code">Learn...</string>
+</resources>
