@@ -22,7 +22,7 @@ public class RemoteCommand implements Serializable {
 	
 	public RemoteCommand(String response) throws IOException {
 		super();
-		String patternstr__code = "<h2>\\s*(.*)\\s*</h2>";
+		String patternstr__code = "<h2>\\s*(.*?)\\s*</h2>";
 		Pattern pattern__code = Pattern.compile(patternstr__code, Pattern.DOTALL | Pattern.MULTILINE);
 		String patternstr__protocol = "Received\\s+(NEC|SONY|RC6|RC5)\\s*:";
 		Pattern pattern__protocol = Pattern.compile(patternstr__protocol, Pattern.DOTALL | Pattern.MULTILINE);

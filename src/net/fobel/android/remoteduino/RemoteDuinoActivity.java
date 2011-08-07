@@ -10,6 +10,11 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,6 +30,41 @@ public class RemoteDuinoActivity extends Activity {
         setContentView(R.layout.main);
     }
     
+    public byte[] serializeObject(Object o) { 
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+     
+        try { 
+			ObjectOutput out = new ObjectOutputStream(bos); 
+			out.writeObject(o); 
+			out.close(); 
+			// Get the bytes of the serialized object 
+			byte[] buf = bos.toByteArray(); 
+			return buf; 
+        } catch(IOException ioe) { 
+			Toast.makeText(this, "Error during serialization", Toast.LENGTH_SHORT).show();
+			return null; 
+        } 
+	} 
+    
+    
+    public Object deserializeObject(byte[] b) { 
+        try { 
+			ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(b)); 
+			Object object = in.readObject(); 
+			in.close(); 
+			     
+			return object; 
+        } catch(ClassNotFoundException cnfe) { 
+			Toast.makeText(this, "Error deserializeObject: class not found error", Toast.LENGTH_SHORT).show();
+			     
+			return null; 
+        } catch(IOException ioe) { 
+			Toast.makeText(this, "Error deserializeObject: io error", Toast.LENGTH_SHORT).show();
+			     
+			return null; 
+        } 
+	} 
+    
     
     public void on__learn_code__handler(View view) throws IOException {
         String url = "http://192.168.1.182/learn";
@@ -34,9 +74,13 @@ public class RemoteDuinoActivity extends Activity {
 			RemoteCommand cmd = new RemoteCommand(result);
 			Toast.makeText(this, "Found protocol: " + cmd.protocol, Toast.LENGTH_LONG).show();
 			Toast.makeText(this, "Found code: " + cmd.code, Toast.LENGTH_LONG).show();
+			byte[] cmd_bytes = serializeObject(cmd);
+			RemoteCommand cmd2 = (RemoteCommand) deserializeObject(cmd_bytes); 
+			Toast.makeText(this, "Deserialized: " + cmd2.code + ", " + cmd2.protocol, Toast.LENGTH_LONG).show();
 		} catch(Exception e) {
 			Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_LONG).show();
 		}
+		
 	}
     
     
