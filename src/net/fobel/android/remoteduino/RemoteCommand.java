@@ -2,7 +2,9 @@ package net.fobel.android.remoteduino;
 
 import java.io.Serializable;
 import java.util.regex.*;
+import java.util.*;
 import java.io.IOException;
+import net.fobel.android.HttpHelper;
 
 
 public class RemoteCommand implements Serializable {
@@ -17,6 +19,7 @@ public class RemoteCommand implements Serializable {
 		this.protocol = protocol;
 		this.code = code;
 	}
+	
 	
 	public RemoteCommand(String label, String response) throws IOException {
 		super();
@@ -44,4 +47,29 @@ public class RemoteCommand implements Serializable {
 			throw new IOException("No protocol found!");
 		}
 	}
+	
+	
+    public static RemoteCommand learn_command(String label) throws Exception {
+        String url = "http://192.168.1.182/learn";
+        
+        String result = HttpHelper.process_get_request(url);
+        RemoteCommand cmd;
+		try {
+			cmd = new RemoteCommand(label, result);
+		} catch(Exception e) {
+			//Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_SHORT).show();
+			throw e;
+		}
+		return cmd;
+	}
+    
+    public String send() {
+        Map<String, String> query_params = new HashMap<String, String>();
+        query_params.put("c", code);
+        query_params.put("p", protocol);
+        
+        String url = "http://192.168.1.182/send";
+        String result = HttpHelper.process_get_request(url, query_params);
+        return result;
+    }
 }

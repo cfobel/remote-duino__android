@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-	<Button android:text="@string/str__learn_code" android:onClick="on__learn_code__handler" android:layout_width="wrap_content" android:id="@+id/btn__learn_code" android:layout_height="wrap_content"></Button>
-	<Button android:text="@string/str__tv_onoff" android:onClick="on__on_off__handler" android:layout_width="wrap_content" android:id="@+id/btn__on_off" android:layout_height="wrap_content"></Button>
-	<TextView android:text="TextView" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/txt__available_commands"></TextView>
-</LinearLayout>
+	<ScrollView android:id="@+id/ScrollView1" xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:orientation="vertical"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    >
+		<LinearLayout android:id="@+id/linearLayout1" android:orientation="vertical" android:layout_height="match_parent" android:layout_width="match_parent">
+			<Button android:text="@string/str__learn_code" android:onClick="on__learn_code__handler" android:layout_width="wrap_content" android:id="@+id/btn__learn_code" android:layout_height="wrap_content"></Button>
+			<Button android:text="@string/str__tv_onoff" android:onClick="on__on_off__handler" android:layout_width="wrap_content" android:id="@+id/btn__on_off" android:layout_height="wrap_content"></Button>
+			<LinearLayout android:id="@+id/llo__remote_buttons" android:orientation="vertical" android:layout_height="wrap_content" android:layout_width="match_parent"></LinearLayout>
+		</LinearLayout>
+	</ScrollView>
