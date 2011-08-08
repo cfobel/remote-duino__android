@@ -1,47 +1,33 @@
 package net.fobel.android.remoteduino;
 
 import android.app.Activity;
-import android.content.Context;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.widget.TextView;
 import java.util.*;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
-
-import net.fobel.android.Serialization;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 
 public class RemoteDuinoActivity extends Activity {
-	ArrayList<RemoteCommand> commands;
+	RemoteCommandManager cmd_manager;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-    	FileInputStream fis;
-    	try {
-    		fis = openFileInput("remote_codes.dat");
-			byte[] cmd_bytes = Serialization.read_bytes(fis);
-			commands = (ArrayList<RemoteCommand>) Serialization.deserializeObject(cmd_bytes); 
-			fis.close();
-    	} catch(FileNotFoundException e) {
-			Toast.makeText(this, "remote_codes.dat not found", Toast.LENGTH_SHORT).show();
-			commands = new ArrayList<RemoteCommand>();
-			save_remote_codes();
+        try {
+        	cmd_manager = new RemoteCommandManager(getApplicationContext());
     	} catch (IOException e) {
 			Toast.makeText(this, "IOException", Toast.LENGTH_SHORT).show();
 		} catch(Exception e) {
@@ -57,7 +43,7 @@ public class RemoteDuinoActivity extends Activity {
 	    	TextView txt__available_commands = (TextView) findViewById(R.id.txt__available_commands);
 	    	String message = "";
 	    	boolean one_shot = true;
-	    	for(RemoteCommand cmd : this.commands) {
+	    	for(RemoteCommand cmd : cmd_manager.get_commands()) {
 	    		if(one_shot) {
 	    			one_shot = false;
 	    		} else {
@@ -72,30 +58,13 @@ public class RemoteDuinoActivity extends Activity {
     }
     
     
-    void save_remote_codes() {
-		byte[] cmd_bytes = Serialization.serializeObject(this.commands);
-    	FileOutputStream fos;
-		try {
-			fos = openFileOutput("remote_codes.dat", Context.MODE_PRIVATE);
-			fos.write(cmd_bytes);
-			fos.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-    
     public void on__learn_code__handler(View view) {
     	RemoteCommand cmd;
 		try {
+			Toast.makeText(this, "Press a button on your remote...", Toast.LENGTH_LONG).show();
 			cmd = learn_command();
+			cmd_manager.add(cmd);
 			Toast.makeText(this, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
-			this.commands.add(cmd);
-			save_remote_codes();
 			update_codes_list();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
