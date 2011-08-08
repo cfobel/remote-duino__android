@@ -7,17 +7,20 @@ import java.io.IOException;
 
 public class RemoteCommand implements Serializable {
 	private static final long serialVersionUID = -4352237220714175048L;
+	public String label;
 	public String protocol;
 	public String code;
 	
-	public RemoteCommand(String protocol, String code) {
+	public RemoteCommand(String label, String protocol, String code) {
 		super();
+		this.label = label;
 		this.protocol = protocol;
 		this.code = code;
 	}
 	
-	public RemoteCommand(String response) throws IOException {
+	public RemoteCommand(String label, String response) throws IOException {
 		super();
+		this.label = label;
 		String patternstr__code = "<h2>\\s*(.*?)\\s*</h2>";
 		Pattern pattern__code = Pattern.compile(patternstr__code, Pattern.DOTALL | Pattern.MULTILINE);
 		String patternstr__protocol = "Received\\s+(NEC|SONY|RC6|RC5)\\[(\\d+)\\]:";

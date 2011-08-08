@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.widget.TextView;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.widget.EditText;
 import java.util.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +23,7 @@ import java.io.InputStreamReader;
 
 public class RemoteDuinoActivity extends Activity {
 	RemoteCommandManager cmd_manager;
+	String label;
 	
     /** Called when the activity is first created. */
     @Override
@@ -31,7 +35,7 @@ public class RemoteDuinoActivity extends Activity {
     	} catch (IOException e) {
 			Toast.makeText(this, "IOException", Toast.LENGTH_SHORT).show();
 		} catch(Exception e) {
-			Toast.makeText(this, "Unexpected exception: " + e, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "[onCreate] Unexpected exception: " + e, Toast.LENGTH_SHORT).show();
 		}
         setContentView(R.layout.main);
 		update_codes_list();
@@ -49,37 +53,58 @@ public class RemoteDuinoActivity extends Activity {
 	    		} else {
 		    		message += "\n";
 	    		}
-	    		message += String.format("p=%s, c=%s", cmd.code, cmd.protocol);
+	    		message += String.format("[%s] p=%s, c=%s", cmd.label, cmd.code, cmd.protocol);
 	    	}
 	    	txt__available_commands.setText(message);
     	} catch(Exception e) {
-			Toast.makeText(this, "Unexpected exception!: " + e, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "[update_codes_list] Unexpected exception: " + e, Toast.LENGTH_SHORT).show();
     	}
     }
     
     
+    public void set_label(String label) {
+    	this.label = label;
+    }
+    
+    
     public void on__learn_code__handler(View view) {
-    	RemoteCommand cmd;
-		try {
-			Toast.makeText(this, "Press a button on your remote...", Toast.LENGTH_LONG).show();
-			cmd = learn_command();
-			cmd_manager.add(cmd);
-			Toast.makeText(this, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
-			update_codes_list();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final EditText input = new EditText(this);
+		final RemoteDuinoActivity here = this;
+		alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				here.set_label(input.getText().toString().trim());
+		    	RemoteCommand cmd;
+				try {
+					cmd = learn_command(label);
+					cmd_manager.add(cmd);
+					Toast.makeText(here, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
+					here.update_codes_list();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+
+		alert.setNegativeButton("Cancel",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						dialog.cancel();
+					}
+				});
+		alert.show();
     }
     
     	
-    public RemoteCommand learn_command() throws Exception {
+    public RemoteCommand learn_command(String label) throws Exception {
         String url = "http://192.168.1.182/learn";
         
         String result = process_get_request(url);
         RemoteCommand cmd;
 		try {
-			cmd = new RemoteCommand(result);
+			cmd = new RemoteCommand(label, result);
 		} catch(Exception e) {
 			Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_SHORT).show();
 			throw e;
@@ -89,7 +114,7 @@ public class RemoteDuinoActivity extends Activity {
     
     
     public void on__on_off__handler(View view) {
-        RemoteCommand cmd = new RemoteCommand("1", "0xEE1101FE");
+        RemoteCommand cmd = new RemoteCommand("TV ON/OFF", "1", "0xEE1101FE");
         send_remote_command(cmd);
     }
     
