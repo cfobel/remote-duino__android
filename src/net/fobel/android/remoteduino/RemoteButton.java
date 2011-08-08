@@ -27,6 +27,6 @@ public class RemoteButton extends Button {
         /*
 		Toast.makeText(context, String.format("CODE: c=%s, p=%s [%s]\nResult: %s",
 				cmd.code, cmd.protocol, cmd.label, result), Toast.LENGTH_SHORT).show();
-		*/
+				*/
 	}
 }

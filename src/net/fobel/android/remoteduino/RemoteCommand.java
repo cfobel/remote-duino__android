@@ -33,7 +33,7 @@ public class RemoteCommand implements Serializable {
 		boolean matchFound = matcher.find();
 
 		if(matchFound) {
-	        this.code = matcher.group(1);
+	        this.code = "0x" + matcher.group(1);
 		} else {
 			throw new IOException("No code found!");
 		}

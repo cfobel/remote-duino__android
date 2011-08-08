@@ -6,7 +6,6 @@
 	    >
 		<LinearLayout android:id="@+id/linearLayout1" android:orientation="vertical" android:layout_height="match_parent" android:layout_width="match_parent">
 			<Button android:text="@string/str__learn_code" android:onClick="on__learn_code__handler" android:layout_width="wrap_content" android:id="@+id/btn__learn_code" android:layout_height="wrap_content"></Button>
-			<Button android:text="@string/str__tv_onoff" android:onClick="on__on_off__handler" android:layout_width="wrap_content" android:id="@+id/btn__on_off" android:layout_height="wrap_content"></Button>
 			<LinearLayout android:id="@+id/llo__remote_buttons" android:orientation="vertical" android:layout_height="wrap_content" android:layout_width="match_parent"></LinearLayout>
 		</LinearLayout>
 	</ScrollView>

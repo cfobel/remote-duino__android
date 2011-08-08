@@ -4,9 +4,7 @@ import android.app.Activity;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Toast;
-import android.widget.TextView;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,7 +39,6 @@ public class RemoteDuinoActivity extends Activity {
     	ll.removeAllViews();
     	final Context c = this.getApplicationContext();
     	for(RemoteCommand cmd : cmd_manager.get_commands()) {
-    		cmd.code = "0x" + cmd.code;
 	    	final RemoteButton temp = new RemoteButton(c, cmd);
     		ll.addView(temp);
     	}
@@ -81,12 +78,5 @@ public class RemoteDuinoActivity extends Activity {
 					}
 				});
 		alert.show();
-    }
-    
-    
-    public void on__on_off__handler(View view) {
-        RemoteCommand cmd = new RemoteCommand("TV ON/OFF", "1", "0xEE1101FE");
-        String result = cmd.send();
-		//Toast.makeText(this, "Result: " + result, Toast.LENGTH_SHORT).show();
     }
 }
