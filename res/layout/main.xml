@@ -4,6 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <Button android:id="@+id/btn__on_off" android:onClick="on__on_off__handler" android:layout_width="wrap_content" android:text="@string/str__tv_onoff" android:layout_height="wrap_content"></Button>
-	<Button android:id="@+id/btn__learn_code" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/str__learn_code" android:onClick="on__learn_code__handler"></Button>
+	<Button android:text="@string/str__learn_code" android:onClick="on__learn_code__handler" android:layout_width="wrap_content" android:id="@+id/btn__learn_code" android:layout_height="wrap_content"></Button>
+	<Button android:text="@string/str__tv_onoff" android:onClick="on__on_off__handler" android:layout_width="wrap_content" android:id="@+id/btn__on_off" android:layout_height="wrap_content"></Button>
+	<TextView android:text="TextView" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/txt__available_commands"></TextView>
 </LinearLayout>

@@ -1,101 +1,142 @@
 package net.fobel.android.remoteduino;
 
 import android.app.Activity;
+import android.content.Context;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import android.widget.TextView;
 import java.util.*;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
 
+import net.fobel.android.Serialization;
+
 
 public class RemoteDuinoActivity extends Activity {
+	ArrayList<RemoteCommand> commands;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+    	FileInputStream fis;
+    	try {
+    		fis = openFileInput("remote_codes.dat");
+			byte[] cmd_bytes = Serialization.read_bytes(fis);
+			commands = (ArrayList<RemoteCommand>) Serialization.deserializeObject(cmd_bytes); 
+			fis.close();
+    	} catch(FileNotFoundException e) {
+			Toast.makeText(this, "remote_codes.dat not found", Toast.LENGTH_SHORT).show();
+			commands = new ArrayList<RemoteCommand>();
+			save_remote_codes();
+    	} catch (IOException e) {
+			Toast.makeText(this, "IOException", Toast.LENGTH_SHORT).show();
+		} catch(Exception e) {
+			Toast.makeText(this, "Unexpected exception: " + e, Toast.LENGTH_SHORT).show();
+		}
         setContentView(R.layout.main);
+		update_codes_list();
     }
     
-    public byte[] serializeObject(Object o) { 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
-     
-        try { 
-			ObjectOutput out = new ObjectOutputStream(bos); 
-			out.writeObject(o); 
-			out.close(); 
-			// Get the bytes of the serialized object 
-			byte[] buf = bos.toByteArray(); 
-			return buf; 
-        } catch(IOException ioe) { 
-			Toast.makeText(this, "Error during serialization", Toast.LENGTH_SHORT).show();
-			return null; 
-        } 
-	} 
+    
+    void update_codes_list() {
+    	try {
+	    	TextView txt__available_commands = (TextView) findViewById(R.id.txt__available_commands);
+	    	String message = "";
+	    	boolean one_shot = true;
+	    	for(RemoteCommand cmd : this.commands) {
+	    		if(one_shot) {
+	    			one_shot = false;
+	    		} else {
+		    		message += "\n";
+	    		}
+	    		message += String.format("p=%s, c=%s", cmd.code, cmd.protocol);
+	    	}
+	    	txt__available_commands.setText(message);
+    	} catch(Exception e) {
+			Toast.makeText(this, "Unexpected exception!: " + e, Toast.LENGTH_SHORT).show();
+    	}
+    }
     
     
-    public Object deserializeObject(byte[] b) { 
-        try { 
-			ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(b)); 
-			Object object = in.readObject(); 
-			in.close(); 
-			     
-			return object; 
-        } catch(ClassNotFoundException cnfe) { 
-			Toast.makeText(this, "Error deserializeObject: class not found error", Toast.LENGTH_SHORT).show();
-			     
-			return null; 
-        } catch(IOException ioe) { 
-			Toast.makeText(this, "Error deserializeObject: io error", Toast.LENGTH_SHORT).show();
-			     
-			return null; 
-        } 
-	} 
+    void save_remote_codes() {
+		byte[] cmd_bytes = Serialization.serializeObject(this.commands);
+    	FileOutputStream fos;
+		try {
+			fos = openFileOutput("remote_codes.dat", Context.MODE_PRIVATE);
+			fos.write(cmd_bytes);
+			fos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     
     
-    public void on__learn_code__handler(View view) throws IOException {
+    public void on__learn_code__handler(View view) {
+    	RemoteCommand cmd;
+		try {
+			cmd = learn_command();
+			Toast.makeText(this, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
+			this.commands.add(cmd);
+			save_remote_codes();
+			update_codes_list();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    	
+    public RemoteCommand learn_command() throws Exception {
         String url = "http://192.168.1.182/learn";
         
-        String result = process_get_request(view, url);
+        String result = process_get_request(url);
+        RemoteCommand cmd;
 		try {
-			RemoteCommand cmd = new RemoteCommand(result);
-			Toast.makeText(this, "Found protocol: " + cmd.protocol, Toast.LENGTH_LONG).show();
-			Toast.makeText(this, "Found code: " + cmd.code, Toast.LENGTH_LONG).show();
-			byte[] cmd_bytes = serializeObject(cmd);
-			RemoteCommand cmd2 = (RemoteCommand) deserializeObject(cmd_bytes); 
-			Toast.makeText(this, "Deserialized: " + cmd2.code + ", " + cmd2.protocol, Toast.LENGTH_LONG).show();
+			cmd = new RemoteCommand(result);
 		} catch(Exception e) {
-			Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "Error parsing response:\n" + result, Toast.LENGTH_SHORT).show();
+			throw e;
 		}
-		
+		return cmd;
 	}
     
     
     public void on__on_off__handler(View view) {
-        String url = "http://192.168.1.182/send";
+        RemoteCommand cmd = new RemoteCommand("1", "0xEE1101FE");
+        send_remote_command(cmd);
+    }
+    
+    
+    public void send_remote_command(RemoteCommand cmd) {
         Map<String, String> query_params = new HashMap<String, String>();
-        query_params.put("c", "0xEE1101FE");
-        query_params.put("p", "1");
+        query_params.put("c", cmd.code);
+        query_params.put("p", cmd.protocol);
         
-        String result = process_get_request(view, url, query_params);
+        String url = "http://192.168.1.182/send";
+        String result = process_get_request(url, query_params);
 		Toast.makeText(this, "Result: " + result, Toast.LENGTH_SHORT).show();
 	}
     
     
-    String process_get_request(View view, String url, Map<String, String> query_params) {  
+    String process_get_request(String url, Map<String, String> query_params) {  
         String charset = "UTF-8";
 
         try {
@@ -116,11 +157,11 @@ public class RemoteDuinoActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		return process_get_request(view, url);
+		return process_get_request(url);
     }
     
     
-    String process_get_request(View view, String url) {  
+    String process_get_request(String url) {  
         String charset = "UTF-8";
         String result = "";
         
