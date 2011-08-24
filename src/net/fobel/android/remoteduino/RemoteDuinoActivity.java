@@ -23,6 +23,7 @@ public class RemoteDuinoActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         try {
+        	/* Create RemoteCommandManager, loading from file if available. */
         	cmd_manager = new RemoteCommandManager(getApplicationContext());
     	} catch (IOException e) {
 			Toast.makeText(this, "IOException", Toast.LENGTH_SHORT).show();
@@ -30,11 +31,19 @@ public class RemoteDuinoActivity extends Activity {
 			Toast.makeText(this, "[onCreate] Unexpected exception: " + e, Toast.LENGTH_SHORT).show();
 		}
         setContentView(R.layout.main);
+    	/* Generate buttons in display corresponding to commands in
+    	 * RemoteCommandManager. */
 		update_codes_list();
     }
     
     
     void update_codes_list() {
+    	/* Remove all command buttons from display, then generate buttons
+    	 * corresponding to commands in RemoteCommandManager. */
+		/* TODO: Change layout of buttons:
+		 * 			-Grid?
+		 * 			-Configurable (serializable) layout? XML?
+		 */
     	LinearLayout ll = (LinearLayout)findViewById(R.id.llo__remote_buttons);
     	ll.removeAllViews();
     	final Context c = this.getApplicationContext();
@@ -46,17 +55,37 @@ public class RemoteDuinoActivity extends Activity {
     
     
     public void set_label(String label) {
+    	/* This function sets the temporary label value to be used when
+    	 * learning a remote command.
+    	 * This may seem a little awkward, but is required since the
+    	 * call-back needs somewhere to store state until the command response
+    	 * has been received. */
     	this.label = label;
     }
     
     
     public void on__learn_code__handler(View view) {
+    	/* This method creates an alert dialog with a textbox and OK/Cancel
+    	 * buttons. When OK is pressed, a request is sent to the IR device to
+    	 * learn a remote code.  Once a response is received, a RemoteCommand
+    	 * instance is created (assigned the label from the textbox) and is
+    	 * added to the cmd_manager RemoteCommandManager list. */
 		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		final EditText input = new EditText(this);
+		/* 'here' acts as a reverse reference for the alert's call-back function
+		 * to maintain state while learning a command. */
+		/* TODO: This might be unnecessary - there may have been something else
+		 * wrong, that appeared to make this necessary.  Shouldn't hurt
+		 * anything for now though... */
 		final RemoteDuinoActivity here = this;
 		alert.setView(input);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
+				/* TODO: (see above)
+				 * We may be able to simply use a local variable for 'label'.
+				 * I seem to remember having issues with that, but once again,
+				 * it may have been an unrelated issue that seemed to make this
+				 * necessary. */
 				here.set_label(input.getText().toString().trim());
 		    	RemoteCommand cmd;
 				try {

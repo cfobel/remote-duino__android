@@ -8,12 +8,16 @@ import net.fobel.android.HttpHelper;
 
 
 public class RemoteCommand implements Serializable {
+	/* This class stores a remote command consisting of an (arbitrary) text
+	 * label (to denote the command's function), along with the corresponding
+	 * remote protocol/code. */
 	private static final long serialVersionUID = -4352237220714175048L;
 	public String label;
 	public String protocol;
 	public String code;
 	
 	public RemoteCommand(String label, String protocol, String code) {
+		/* Create a new RemoteCommand instance based specific protocol and code values. */
 		super();
 		this.label = label;
 		this.protocol = protocol;
@@ -22,6 +26,8 @@ public class RemoteCommand implements Serializable {
 	
 	
 	public RemoteCommand(String label, String response) throws IOException {
+		/* Create a new RemoteCommand instance based on response from "learn" command.
+		 * We parse the "learn" response to obtain the protocol and code values. */
 		super();
 		this.label = label;
 		String patternstr__code = "<h2>\\s*(.*?)\\s*</h2>";
@@ -50,6 +56,10 @@ public class RemoteCommand implements Serializable {
 	
 	
     public static RemoteCommand learn_command(String label) throws Exception {
+    	/* Static method which waits for a learned command response and returns
+    	 * a RemoteCommand instance based on the "learn" response. */
+    	/* TODO: Add IP address as a parameter that can be set in a menu.
+    	 * 			This will require the IP to be passed as additional parameter. */
         String url = "http://192.168.1.182/learn";
         
         String result = HttpHelper.process_get_request(url);
@@ -64,6 +74,9 @@ public class RemoteCommand implements Serializable {
 	}
     
     public String send() {
+    	/* Send the a request for the remote code/protocol to the appropriate
+    	 * IP address. */
+    	/* TODO: Add IP address argument. (see learn_command()) */
         Map<String, String> query_params = new HashMap<String, String>();
         query_params.put("c", code);
         query_params.put("p", protocol);
