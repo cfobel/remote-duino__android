@@ -4,4 +4,5 @@
     <string name="app_name">RemoteDuino</string>
     <string name="str__tv_onoff">TV ON/OFF</string>
     <string name="str__learn_code">Learn...</string>
+    <string name="change_ip">Set IP</string>
 </resources>

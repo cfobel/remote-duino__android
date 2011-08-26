@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icons poached from: http://www.androidicons.com/freebies.php -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/learn" android:icon="@drawable/ic_menu_wizard"
+		android:title="@string/str__learn_code" />
+	<item android:id="@+id/change_ip" android:icon="@drawable/ic_menu_globe"
+		android:title="@string/change_ip" />
+</menu>

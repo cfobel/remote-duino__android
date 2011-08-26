@@ -1,16 +1,19 @@
 package net.fobel.android.remoteduino;
 
-import android.app.Activity;
+import java.io.IOException;
 
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import java.io.IOException;
+import android.widget.Toast;
 
 
 public class RemoteDuinoActivity extends Activity {
@@ -64,48 +67,79 @@ public class RemoteDuinoActivity extends Activity {
     }
     
     
-    public void on__learn_code__handler(View view) {
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+        case R.id.learn:
+        	showLearnCode();
+            return true;
+        case R.id.change_ip:
+        	showEnterIP();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+    
+    private void showEnterIP() {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "Would be pretty sweet if this worked!", Toast.LENGTH_SHORT);
+	}
+
+
+	private void showLearnCode() {
     	/* This method creates an alert dialog with a textbox and OK/Cancel
     	 * buttons. When OK is pressed, a request is sent to the IR device to
     	 * learn a remote code.  Once a response is received, a RemoteCommand
     	 * instance is created (assigned the label from the textbox) and is
     	 * added to the cmd_manager RemoteCommandManager list. */
-		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-		final EditText input = new EditText(this);
-		/* 'here' acts as a reverse reference for the alert's call-back function
-		 * to maintain state while learning a command. */
-		/* TODO: This might be unnecessary - there may have been something else
-		 * wrong, that appeared to make this necessary.  Shouldn't hurt
-		 * anything for now though... */
-		final RemoteDuinoActivity here = this;
-		alert.setView(input);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				/* TODO: (see above)
-				 * We may be able to simply use a local variable for 'label'.
-				 * I seem to remember having issues with that, but once again,
-				 * it may have been an unrelated issue that seemed to make this
-				 * necessary. */
-				here.set_label(input.getText().toString().trim());
-		    	RemoteCommand cmd;
-				try {
-					cmd = RemoteCommand.learn_command(label);
-					cmd_manager.add(cmd);
-					Toast.makeText(here, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
-					here.update_codes_list();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});
-
-		alert.setNegativeButton("Cancel",
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						dialog.cancel();
-					}
-				});
-		alert.show();
+    	final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    	final EditText input = new EditText(this);
+    	/* 'here' acts as a reverse reference for the alert's call-back function
+    	 * to maintain state while learning a command. */
+    	/* TODO: This might be unnecessary - there may have been something else
+    	 * wrong, that appeared to make this necessary.  Shouldn't hurt
+    	 * anything for now though... */
+    	final RemoteDuinoActivity here = this;
+    	alert.setMessage("Button Name:");
+    	alert.setView(input);
+    	alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+    		public void onClick(DialogInterface dialog, int whichButton) {
+    			/* TODO: (see above)
+    			 * We may be able to simply use a local variable for 'label'.
+    			 * I seem to remember having issues with that, but once again,
+    			 * it may have been an unrelated issue that seemed to make this
+    			 * necessary. */
+    			here.set_label(input.getText().toString().trim());
+    			RemoteCommand cmd;
+    			try {
+    				cmd = RemoteCommand.learn_command(label);
+    				cmd_manager.add(cmd);
+    				Toast.makeText(here, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
+    				here.update_codes_list();
+    			} catch (Exception e) {
+    				Toast.makeText(here, e.getMessage(), Toast.LENGTH_SHORT).show();
+    				e.printStackTrace();
+    			}
+    		}
+    	});
+    	
+    	alert.setNegativeButton("Cancel",
+    			new DialogInterface.OnClickListener() {
+    		public void onClick(DialogInterface dialog, int whichButton) {
+    			dialog.cancel();
+    		}
+    	});
+    	alert.show();
     }
+
 }
