@@ -1,15 +1,15 @@
 package net.fobel.android.remoteduino;
 
-import android.content.Context;
-import android.widget.Toast;
-
-import java.util.*;
-import java.util.regex.*;
-import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import net.fobel.android.Serialization;
+import android.content.Context;
 
 
 public class RemoteCommandManager {

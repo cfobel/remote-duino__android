@@ -50,7 +50,9 @@ public class RemoteCommand implements Serializable {
 		if(matchFound) {
 	        this.protocol = matcher.group(2);
 		} else {
-			throw new IOException("No protocol found!");
+			// TODO:  Don't do this.  It makes Brad's Stereo work.
+//			throw new IOException("No protocol found!");
+			this.protocol = "ReceivedSONY[1]";
 		}
 	}
 	
@@ -60,7 +62,7 @@ public class RemoteCommand implements Serializable {
     	 * a RemoteCommand instance based on the "learn" response. */
     	/* TODO: Add IP address as a parameter that can be set in a menu.
     	 * 			This will require the IP to be passed as additional parameter. */
-        String url = "http://192.168.1.182/learn";
+        String url = "http://192.168.0.50/learn";
         
         String result = HttpHelper.process_get_request(url);
         RemoteCommand cmd;
@@ -81,7 +83,7 @@ public class RemoteCommand implements Serializable {
         query_params.put("c", code);
         query_params.put("p", protocol);
         
-        String url = "http://192.168.1.182/send";
+        String url = "http://192.168.0.50/send";
         String result = HttpHelper.process_get_request(url, query_params);
         return result;
     }

@@ -1,9 +1,8 @@
 package net.fobel.android.remoteduino;
 
-import android.widget.Toast;
 import android.content.Context;
-import android.widget.Button;
 import android.view.View;
+import android.widget.Button;
 
 public class RemoteButton extends Button {
 	RemoteCommand cmd;
