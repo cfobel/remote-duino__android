@@ -1,10 +1,11 @@
 package net.fobel.android.remoteduino;
 
-import java.io.Serializable;
-import java.util.regex.*;
-import java.util.*;
 import java.io.IOException;
-import net.fobel.android.HttpHelper;
+import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.fobel.android.remoteduino.devices.WebArduinoIRDevice;
 
 
 public class RemoteCommand implements Serializable {
@@ -52,19 +53,15 @@ public class RemoteCommand implements Serializable {
 		} else {
 			// TODO:  Don't do this.  It makes Brad's Stereo work.
 //			throw new IOException("No protocol found!");
-			this.protocol = "ReceivedSONY[1]";
+			this.protocol = "1";
 		}
 	}
 	
 	
-    public static RemoteCommand learn_command(String label) throws Exception {
+    public static RemoteCommand learn_command(String label, WebArduinoIRDevice irDevice) throws Exception {
     	/* Static method which waits for a learned command response and returns
     	 * a RemoteCommand instance based on the "learn" response. */
-    	/* TODO: Add IP address as a parameter that can be set in a menu.
-    	 * 			This will require the IP to be passed as additional parameter. */
-        String url = "http://192.168.0.50/learn";
-        
-        String result = HttpHelper.process_get_request(url);
+        String result = irDevice.learn();
         RemoteCommand cmd;
 		try {
 			cmd = new RemoteCommand(label, result);
@@ -75,16 +72,7 @@ public class RemoteCommand implements Serializable {
 		return cmd;
 	}
     
-    public String send() {
-    	/* Send the a request for the remote code/protocol to the appropriate
-    	 * IP address. */
-    	/* TODO: Add IP address argument. (see learn_command()) */
-        Map<String, String> query_params = new HashMap<String, String>();
-        query_params.put("c", code);
-        query_params.put("p", protocol);
-        
-        String url = "http://192.168.0.50/send";
-        String result = HttpHelper.process_get_request(url, query_params);
-        return result;
+    public String send(WebArduinoIRDevice irDevice) {
+    	return irDevice.send(code, protocol);
     }
 }
