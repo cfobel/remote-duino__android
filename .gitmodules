@@ -1,0 +1,3 @@
+[submodule "site_scons/site_tools/android"]
+	path = site_scons/site_tools/android
+	url = https://github.com/cfobel/scons-android.git
