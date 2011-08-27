@@ -2,15 +2,16 @@ package net.fobel.android.remoteduino;
 
 import java.io.IOException;
 
+import net.fobel.android.remoteduino.devices.WebArduinoIRDevice;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -19,12 +20,15 @@ import android.widget.Toast;
 public class RemoteDuinoActivity extends Activity {
 	RemoteCommandManager cmd_manager;
 	String label;
+	private static final String SETTING_URL = "setting_url"; 
+	private WebArduinoIRDevice mIRDevice;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+		mIRDevice = initDevice();
+
         try {
         	/* Create RemoteCommandManager, loading from file if available. */
         	cmd_manager = new RemoteCommandManager(getApplicationContext());
@@ -39,8 +43,13 @@ public class RemoteDuinoActivity extends Activity {
 		update_codes_list();
     }
     
-    
-    void update_codes_list() {
+    private WebArduinoIRDevice initDevice() {
+        SharedPreferences settings = getPreferences(0);
+    	String url = settings.getString(SETTING_URL, "192.168.0.100");
+		return new WebArduinoIRDevice(url);
+	}
+
+	void update_codes_list() {
     	/* Remove all command buttons from display, then generate buttons
     	 * corresponding to commands in RemoteCommandManager. */
 		/* TODO: Change layout of buttons:
@@ -51,11 +60,10 @@ public class RemoteDuinoActivity extends Activity {
     	ll.removeAllViews();
     	final Context c = this.getApplicationContext();
     	for(RemoteCommand cmd : cmd_manager.get_commands()) {
-	    	final RemoteButton temp = new RemoteButton(c, cmd);
+	    	final RemoteButton temp = new RemoteButton(c, mIRDevice, cmd);
     		ll.addView(temp);
     	}
     }
-    
     
     public void set_label(String label) {
     	/* This function sets the temporary label value to be used when
@@ -65,8 +73,6 @@ public class RemoteDuinoActivity extends Activity {
     	 * has been received. */
     	this.label = label;
     }
-    
-    
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,10 +97,35 @@ public class RemoteDuinoActivity extends Activity {
     }
     
     private void showEnterIP() {
-		// TODO Auto-generated method stub
-		Toast.makeText(this, "Would be pretty sweet if this worked!", Toast.LENGTH_SHORT);
-	}
+//		Toast.makeText(this, "Would be pretty sweet if this worked!", Toast.LENGTH_SHORT);
+    	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    	final EditText input = new EditText(this);
+    	alert.setMessage("Current IP: " + mIRDevice.getUrl());
+    	alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				String newURL = input.getText().toString().trim();
 
+				// Update the active device
+				mIRDevice.setUrl(newURL);
+
+				// Store the pref
+				SharedPreferences settings = getPreferences(0);
+				SharedPreferences.Editor editor = settings.edit();
+				editor.putString(SETTING_URL, newURL);
+
+				// Commit the edits!
+				editor.commit();
+			}
+		});
+    	
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				dialog.cancel();
+			}
+		});
+		alert.show();
+	}
 
 	private void showLearnCode() {
     	/* This method creates an alert dialog with a textbox and OK/Cancel
@@ -122,7 +153,7 @@ public class RemoteDuinoActivity extends Activity {
     			here.set_label(input.getText().toString().trim());
     			RemoteCommand cmd;
     			try {
-    				cmd = RemoteCommand.learn_command(label);
+    				cmd = RemoteCommand.learn_command(label, mIRDevice);
     				cmd_manager.add(cmd);
     				Toast.makeText(here, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
     				here.update_codes_list();
@@ -141,5 +172,4 @@ public class RemoteDuinoActivity extends Activity {
     	});
     	alert.show();
     }
-
 }
