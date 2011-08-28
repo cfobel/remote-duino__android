@@ -2,10 +2,11 @@ package net.fobel.android.remoteduino;
 
 import java.io.IOException;
 
+import net.fobel.android.AlertHelper;
+import net.fobel.android.AlertHelper.AlertOnClickI;
 import net.fobel.android.remoteduino.devices.WebArduinoIRDevice;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,8 +15,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-
 
 public class RemoteDuinoActivity extends Activity {
 	RemoteCommandManager cmd_manager;
@@ -58,9 +59,8 @@ public class RemoteDuinoActivity extends Activity {
 		 */
     	LinearLayout ll = (LinearLayout)findViewById(R.id.llo__remote_buttons);
     	ll.removeAllViews();
-    	final Context c = this.getApplicationContext();
     	for(RemoteCommand cmd : cmd_manager.get_commands()) {
-	    	final RemoteButton temp = new RemoteButton(c, mIRDevice, cmd);
+	    	final RemoteButton temp = new RemoteButton(this, cmd_manager, mIRDevice, cmd);
     		ll.addView(temp);
     	}
     }
@@ -97,7 +97,6 @@ public class RemoteDuinoActivity extends Activity {
     }
     
     private void showEnterIP() {
-//		Toast.makeText(this, "Would be pretty sweet if this worked!", Toast.LENGTH_SHORT);
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
     	final EditText input = new EditText(this);
     	alert.setMessage("Current IP: " + mIRDevice.getUrl());
@@ -133,43 +132,32 @@ public class RemoteDuinoActivity extends Activity {
     	 * learn a remote code.  Once a response is received, a RemoteCommand
     	 * instance is created (assigned the label from the textbox) and is
     	 * added to the cmd_manager RemoteCommandManager list. */
-    	final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-    	final EditText input = new EditText(this);
+
     	/* 'here' acts as a reverse reference for the alert's call-back function
     	 * to maintain state while learning a command. */
     	/* TODO: This might be unnecessary - there may have been something else
     	 * wrong, that appeared to make this necessary.  Shouldn't hurt
     	 * anything for now though... */
-    	final RemoteDuinoActivity here = this;
-    	alert.setMessage("Button Name:");
-    	alert.setView(input);
-    	alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-    		public void onClick(DialogInterface dialog, int whichButton) {
+    	final RemoteDuinoActivity thisActivity = this;
+		AlertHelper.showTextInputAlert(this, "Button Name:", new AlertOnClickI() {
+			public void onClick(DialogInterface dialog, TextView input) {
     			/* TODO: (see above)
     			 * We may be able to simply use a local variable for 'label'.
     			 * I seem to remember having issues with that, but once again,
     			 * it may have been an unrelated issue that seemed to make this
     			 * necessary. */
-    			here.set_label(input.getText().toString().trim());
+    			thisActivity.set_label(input.getText().toString().trim());
     			RemoteCommand cmd;
     			try {
     				cmd = RemoteCommand.learn_command(label, mIRDevice);
     				cmd_manager.add(cmd);
-    				Toast.makeText(here, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
-    				here.update_codes_list();
+    				Toast.makeText(thisActivity, "Added code to local list: " + cmd.code + ", " + cmd.protocol, Toast.LENGTH_SHORT).show();
+    				thisActivity.update_codes_list();
     			} catch (Exception e) {
-    				Toast.makeText(here, e.getMessage(), Toast.LENGTH_SHORT).show();
+    				Toast.makeText(thisActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
     				e.printStackTrace();
-    			}
-    		}
+    			}				
+			}
     	});
-    	
-    	alert.setNegativeButton("Cancel",
-    			new DialogInterface.OnClickListener() {
-    		public void onClick(DialogInterface dialog, int whichButton) {
-    			dialog.cancel();
-    		}
-    	});
-    	alert.show();
     }
 }
