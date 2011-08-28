@@ -65,4 +65,14 @@ public class RemoteCommandManager {
 		fos.write(cmd_bytes);
 		fos.close();
     }
+
+	public void remove(RemoteCommand cmd) {
+    	/* Add command to list and save to file. */
+		commands.remove(cmd);
+		try {
+			save_remote_codes();
+		} catch(IOException e) {
+			// Ignore failed save...
+		}
+	}
 }
